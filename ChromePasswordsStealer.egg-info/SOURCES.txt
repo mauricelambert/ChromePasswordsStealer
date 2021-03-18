@@ -2,6 +2,9 @@ LICENSE.txt
 MANIFEST.in
 README.md
 setup.py
+ChromePasswordsStealer/ChromePasswordsStealer.py
+ChromePasswordsStealer/__init__.py
+ChromePasswordsStealer/__main__.py
 ChromePasswordsStealer.egg-info/PKG-INFO
 ChromePasswordsStealer.egg-info/SOURCES.txt
 ChromePasswordsStealer.egg-info/dependency_links.txt

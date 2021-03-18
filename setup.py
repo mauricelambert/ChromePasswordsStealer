@@ -4,7 +4,7 @@ setup(
     name = "ChromePasswordsStealer",
  
     version = "0.0.1",
-    packages = find_packages(include="ChromePasswordsStealer"),
+    packages = find_packages(include=["ChromePasswordsStealer"]),
     install_requires = ["pywin32"],
 
     author = "Maurice Lambert", 
@@ -16,7 +16,7 @@ setup(
  
     include_package_data = True,
 
-    url = 'https://github.com/mauricelambert/RansomWare',
+    url = 'https://github.com/mauricelambert/ChromePasswordsStealer',
  
     classifiers = [
         "Programming Language :: Python",
