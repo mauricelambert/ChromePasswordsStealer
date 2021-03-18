@@ -1,0 +1,10 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+setup.py
+ChromePasswordsStealer.egg-info/PKG-INFO
+ChromePasswordsStealer.egg-info/SOURCES.txt
+ChromePasswordsStealer.egg-info/dependency_links.txt
+ChromePasswordsStealer.egg-info/entry_points.txt
+ChromePasswordsStealer.egg-info/requires.txt
+ChromePasswordsStealer.egg-info/top_level.txt
