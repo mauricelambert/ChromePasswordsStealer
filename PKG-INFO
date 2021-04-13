@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: ChromePasswordsStealer
-Version: 0.0.1
-Summary: This package steal chrome password on Windows.
+Version: 0.0.2
+Summary: This package steal Google Chrome passwords on Windows.
 Home-page: https://github.com/mauricelambert/ChromePasswordsStealer
 Author: Maurice Lambert
 Author-email: mauricelambert434@gmail.com

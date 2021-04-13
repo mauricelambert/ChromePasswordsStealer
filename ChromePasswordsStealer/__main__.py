@@ -28,7 +28,7 @@ I am creating this package for ETHICAL hacking.
 
 print(
     """
-RansomWare  Copyright (C) 2021  Maurice Lambert
+ChromePasswordsStealer  Copyright (C) 2021  Maurice Lambert
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
