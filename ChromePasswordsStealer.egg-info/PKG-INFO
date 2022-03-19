@@ -1,77 +1,110 @@
 Metadata-Version: 2.1
 Name: ChromePasswordsStealer
-Version: 0.0.2
-Summary: This package steal Google Chrome passwords on Windows.
+Version: 1.0.0
+Summary: This module steals chrome passwords on Windows.
 Home-page: https://github.com/mauricelambert/ChromePasswordsStealer
 Author: Maurice Lambert
 Author-email: mauricelambert434@gmail.com
-License: UNKNOWN
-Description: # ChromePasswordsStealer
-        
-        ## Description
-        This package steal chrome password on Windows.
-        
-        ## Requirements
-        This package require :
-         - python3
-         - python3 Standard Library
-         - pywin32
-        
-        ## Installation
-        ```bash
-        pip install ChromePasswordsStealer
-        ```
-        
-        ## Launcher
-        
-        ## Command line:
-        ```bash
-        ChromeStealer # get chromes passwords and save it in "passwords.txt"
-        ChromeStealer save_passwords.txt # get chromes passwords and save it in "save_passwords.txt"
-        ```
-        
-        ### Python script
-        ```python
-        from ChromePasswordsStealer import ChromePasswordsStealer, steal
-        
-        steal() # get chromes passwords and save it in "passwords.txt"
-        
-        stealer = ChromePasswordsStealer(filename="save_passwords.txt")
-        stealer.decrypt_and_save() # get chromes passwords and save it in "save_passwords.txt"
-        ```
-        
-        ### Python executable:
-        ```bash
-        python3 ChromePasswordsStealer.pyz save_passwords.txt
-        
-        # OR
-        chmod u+x ChromePasswordsStealer.pyz # add execute rights
-        ./ChromePasswordsStealer.pyz aaa # execute file
-        ```
-        
-        ### Python module (command line):
-        
-        ```bash
-        python3 -m ChromePasswordsStealer
-        python3 -m ChromePasswordsStealer.ChromePasswordsStealer save_passwords.txt
-        ```
-        
-        ## Links
-         - [Github Page](https://github.com/mauricelambert/ChromePasswordsStealer/)
-         - [Documentation](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.html)
-         - [Download as python executable](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz)
-         - [Pypi package](https://pypi.org/project/ChromePasswordsStealer/)
-        
-        ## Licence
-        Licensed under the [GPL, version 3](https://www.gnu.org/licenses/).
-        
-Platform: UNKNOWN
+Maintainer: Maurice Lambert
+Maintainer-email: mauricelambert434@gmail.com
+License: GPL-3.0 License
+Project-URL: Documentation, https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.html
+Project-URL: Executable, https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz
+Keywords: Chrome,Google,Passwords,Decrypt,Steal,Recovery,Security
+Platform: Windows
 Classifier: Programming Language :: Python
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Console
 Classifier: Natural Language :: English
+Classifier: Topic :: Security
+Classifier: Natural Language :: English
 Classifier: Programming Language :: Python :: 3.9
 Classifier: Operating System :: Microsoft :: Windows
-Classifier: Topic :: Security
-Requires-Python: >=3.6
+Requires-Python: >=3.8
 Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+![ChromePasswordsStealer logo](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer_small.png "ChromePasswordsStealer logo")
+
+# ChromePasswordsStealer
+
+## Description
+
+This module steals chrome passwords on Windows.
+
+## Requirements
+
+This package require:
+ - python3
+ - python3 Standard Library
+ - pywin32
+ - PythonToolsKit
+ - PyCryptodome
+
+## Installation
+
+```bash
+pip install ChromePasswordsStealer
+```
+
+## Usages
+
+## Command lines
+
+```bash
+# Python executable
+python3 ChromePasswordsStealer.pyz -h
+# or
+chmod u+x ChromePasswordsStealer.pyz
+./ChromePasswordsStealer.pyz --help
+
+# Python module
+python3 -m ChromePasswordsStealer
+
+# Entry point (console)
+ChromeStealer --save-all --window -f passwords
+```
+
+### Python script
+
+```python
+from ChromePasswordsStealer import ChromePasswordsStealer
+stealer = ChromePasswordsStealer()
+stealer = ChromePasswordsStealer("passwords", True)
+stealer.get_database_cursor()
+stealer.get_key()
+for url, username, password in stealer.get_credentials():
+    print(url, username, password)
+
+stealer.save_and_clean()
+```
+
+## Help
+
+```text
+~# python3 ChromePasswordsStealer.py -h
+
+usage: ChromePasswordsStealer.py [-h] [--filename FILENAME] [--window] [--save-all]
+
+This program steals Chrome passwords on Windows.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --filename FILENAME, -f FILENAME
+                        The filename to export the credentials.
+  --window, -w          Do not hide the console.
+  --save-all, -s        Save chrome db, key file and key.
+```
+
+## Links
+
+ - [Github Page](https://github.com/mauricelambert/ChromePasswordsStealer/)
+ - [Documentation](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.html)
+ - [Download as python executable](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz)
+ - [Pypi package](https://pypi.org/project/ChromePasswordsStealer/)
+
+## Licence
+
+Licensed under the [GPL, version 3](https://www.gnu.org/licenses/).
+
+
