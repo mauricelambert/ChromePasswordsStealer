@@ -35,7 +35,7 @@ This module steals chrome passwords on Windows.
 >>> stealer.save_and_clean()
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"

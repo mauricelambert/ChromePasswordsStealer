@@ -2,21 +2,23 @@ from setuptools import setup
 
 setup(
     name="ChromePasswordsStealer",
-    version="1.0.0",
+    version="1.0.2",
     py_modules=["ChromePasswordsStealer"],
     install_requires=["PythonToolsKit", "pywin32", "pycryptodome"],
     author="Maurice Lambert",
     author_email="mauricelambert434@gmail.com",
     maintainer="Maurice Lambert",
     maintainer_email="mauricelambert434@gmail.com",
-    description="This module steals chrome passwords on Windows.",
+    description="This module steals chrome and chromium passwords on Windows",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     include_package_data=True,
     url="https://github.com/mauricelambert/ChromePasswordsStealer",
     project_urls={
         "Documentation": "https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.html",
-        "Executable": "https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz",
+        "Python Executable": "https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz",
+        "Windows Executable - Github": "https://github.com/mauricelambert/ChromePasswordsStealer/releases/latest",
+        "Windows Executable - SourceForge": "https://sourceforge.net/projects/chromepasswordsstealer/files/latest/download",
     },
     classifiers=[
         "Programming Language :: Python",

@@ -74,7 +74,9 @@ optional arguments:
 
  - [Github Page](https://github.com/mauricelambert/ChromePasswordsStealer/)
  - [Documentation](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.html)
- - [Download as python executable](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz)
+ - [Python Executable](https://mauricelambert.github.io/info/python/security/ChromePasswordsStealer.pyz)
+ - [Windows Executable - Github](https://github.com/mauricelambert/ChromePasswordsStealer/releases/latest)
+ - [Windows Executable - SourceForge](https://sourceforge.net/projects/chromepasswordsstealer/files/latest/download)
  - [Pypi package](https://pypi.org/project/ChromePasswordsStealer/)
 
 ## Licence
